@@ -39,7 +39,7 @@ function Upgrade() {
         echo "error: git clone https://github.com/WSure00/cdr.git $git_dir"
     else
         target_version=`grep "VERSION=" $git_dir/cdr | awk -F'=' 'NR==1{print$2}'`
-        if [ `expr $VERSION \> $target_version` -eq 0 ];then
+        if [ `expr $VERSION \>\= $target_version` -eq 0 ];then
             echo -e "\nlocal version is $VERSION, latest version is $target_version"
             echo "--------upgrading--------"
             mv $git_dir/cdr $SCRIPT_PATH/
