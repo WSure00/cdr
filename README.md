@@ -1,7 +1,7 @@
 # cdr
 _Helps developers move efficiently in the repo directory_
 
-_工具核心思路是使用repo list 和 grep 等组合命令，查找并进入相关项目路径。可以在repo项目目录中任意处使用。_
+_工具核心思路是使用repo list 和 grep 等组合命令，查找并进入相关项目路径。可以在repo任意目录中使用。_
 
 ## 使用方法:  
 _( Ubuntu16.04 为例 )_
