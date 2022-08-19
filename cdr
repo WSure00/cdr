@@ -1,7 +1,7 @@
 #!/bin/bash
 # version:1.2 date:20220819 author:wangshuo
 
-#set -x
+# set -x
 VERSION=1.2
 REVERSE="~"
 SHELL_RC="~/.bashrc"
@@ -79,7 +79,7 @@ function grep_string(){
 
 function Install(){
 
-    mkdir -p ~/bin && cp $SCRIPT_NAME ${INSTALL_PATH}/ && echo -e "mkdir $INSTALL_PATH \nmove $SCRIPT_NAME to $INSTALL_PATH/"
+    mkdir -p ~/bin && cp $SCRIPT_NAME ~/bin/ && echo -e "mkdir $INSTALL_PATH \nmove $SCRIPT_NAME to $INSTALL_PATH/"
     shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"$INSTALL_PATH\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
     echo "PATH already exist!"
@@ -114,7 +114,9 @@ if [ "$#" -gt "0" ];then
                 repository="`eval $shell_string`"
                 project_sum=`echo "$repository" | awk 'END{if($0!="")print NR}'`
 
-                if [ "$project_sum" -gt "1" ];then
+                if [ -z "$project_sum" ];then
+                    echo -e "\033[33merror: cannot find $*\033[0m"
+                elif [ "$project_sum" -gt "1" ];then
 
                     color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
                     for c in `echo $project`;do
