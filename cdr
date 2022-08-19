@@ -1,8 +1,8 @@
 #!/bin/bash
-# version:1.01 date:20220811 author:wangshuo
+# version:1.1 date:20220811 author:wangshuo
 
 #set -x
-VERSION=1.01
+VERSION=1.1
 REVERSE="~"
 SHELL_RC="~/.bashrc"
 
