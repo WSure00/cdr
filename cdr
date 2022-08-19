@@ -1,0 +1,144 @@
+#!/bin/bash
+# version:1.01 date:20220811 author:wangshuo
+
+#set -x
+VERSION=1.01
+REVERSE="~"
+SHELL_RC="~/.bashrc"
+
+project=$*
+REPO_DIR=".repo"
+CUR_DIR=`pwd`
+HOME_DIR=`echo $HOME`
+OLD_DIR=""
+repo=""
+GREP_STRING=""
+
+function Usage() {
+    echo -e "\033[33mUsage: cdr [project path]\033[0m"
+    echo -e "\033[37m   eg: cdr preloader (return path within preloader)\033[0m"
+    echo -e "\033[33mUsage: cdr ${REVERSE}[project path]\033[0m"
+    echo -e "\033[37m   eg: cdr custom ${REVERSE}trustzone (return custom but without trustzone)\033[0m"
+    echo -e "\033[33mUsage: cdr ~ (return to top of your project)\033[0m"
+    echo -e "\n\033[33m[-h] help\033[0m"
+    echo -e "\033[33m[-v] version\033[0m"
+    echo -e "\033[33m[-i] install the cdr\033[0m"
+}
+
+function findrepo(){
+
+    while [ "$CUR_DIR" != "$OLD_DIR" ] && [ -z "$repo" ]
+    do
+        repo="$CUR_DIR/$REPO_DIR"
+        if [ ! -d "$repo" ];then
+            repo=""
+            OLD_DIR=$CUR_DIR
+            CUR_DIR=`dirname $CUR_DIR`
+        fi
+    done
+
+}
+
+function grep_string(){
+
+        for i in `echo $project`;do
+            if [ ${i:0:1} = "$REVERSE" ];then
+                GREP_STRING=${GREP_STRING}"grep -iv ${i:1} |"
+            else
+                GREP_STRING=${GREP_STRING}"grep -i $i |"
+            fi
+        done
+
+}
+
+function Install(){
+
+    mkdir -p ~/bin && cp cdr ~/bin/ && echo -e "mkdir ~/bin \nmove cdr to ~/bin/"
+    shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"~/bin\" | grep -v \"#\""`
+    if [ -n "$shell_string" ];then
+    echo "PATH already exist!"
+    else
+    eval "echo \"export PATH=\\\$PATH:~/bin\" >> $SHELL_RC"
+    echo "export PATH=\$PATH:~/bin >> $SHELL_RC"
+    fi
+
+    shell_string=`eval "cat $SHELL_RC | grep \"alias cdr\" | grep \"source ~/bin/cdr\" | grep -v \"#\""`
+    if [ -n "$shell_string" ];then
+    echo "alias already exist!"
+    else
+    eval "echo \"alias cdr='source ~/bin/cdr'\" >> $SHELL_RC"
+    echo "alias cdr='source ~/bin/cdr' >> $SHELL_RC"
+    fi
+
+    echo -e "\033[33m-----install successful!------\033[0m"
+    echo -e "please run:"
+    echo -e "\033[33m          source  $SHELL_RC\033[0m"
+}
+
+findrepo
+if [ "$#" -gt "0" ];then
+    if [ "${1:0:1}" != "-" ];then
+        if [ "$CUR_DIR" != "/" ];then
+            if [ "$1" != "~" ] && [ "$1" != "$HOME_DIR" ];then
+                SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps | awk '{print $NF}' | grep -v NF `
+                SHELL_VERSION=`echo $SHELL_VERSION | awk 'NR==1{print$1}' | sed 's/ //g'| xargs basename`
+
+                grep_string
+                shell_string="repo list | $GREP_STRING awk '{print \$0}'"
+                repository="`eval $shell_string`"
+                project_sum=`echo "$repository" | awk 'END{if($0!="")print NR}'`
+
+                if [ "$project_sum" -gt "1" ];then
+
+                    color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
+                    for c in `echo $project`;do
+                        color=$(echo "$color" | sed 's/'${c}'/\\033[31m'${c}'\\033[0m/g')
+                    done
+                    echo -e "$color"
+                    echo ""
+
+                    if [ "$SHELL_VERSION" = "zsh" ];then
+                        vared -p "Please select a number of directory: " -c choice
+                    else
+                        read -p "Please select a number of directory: " choice
+                    fi
+
+                    if [ $choice -le $project_sum ] && [ $choice -gt 0 ];then
+                        dest_project="`echo "$repository" | awk 'NR=="'$choice'"{print$1}'`"
+                        echo "path : $CUR_DIR/$dest_project"
+                        cd $CUR_DIR/$dest_project
+                    else
+                        echo -e "\033[33merror: number should between 1 ~ ${project_sum}\033[0m"
+                    fi
+                        unset choice
+
+                elif [ "$project_sum" -gt "0" ];then
+                    dest_project="`echo "$repository" | awk '{print$1}'`"
+                    echo "path : $CUR_DIR/$dest_project"
+                    cd $CUR_DIR/$dest_project
+                else
+                    echo -e "\033[33merror: cannot find $*\033[0m"
+                fi
+            else
+                cd $CUR_DIR
+            fi
+
+        else
+            echo -e "\033[33merror: repo not init here!\033[0m"
+        fi
+        unset GREP_STRING
+
+    else
+        if [ "$1" = "-h" ];then
+            Usage
+        elif [ "$1" = "-v" ];then
+            echo -e "\033[33mversion is:$VERSION \033[0m"
+        elif [ "$1" = "-i" ];then
+            Install
+        else
+            cd -
+        fi
+    fi
+else
+    cd $CUR_DIR
+fi
