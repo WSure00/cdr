@@ -42,8 +42,10 @@ function Upgrade() {
         if [ `expr $VERSION \>\= $target_version` -eq 0 ];then
             echo -e "\nlocal version is $VERSION, latest version is $target_version"
             echo "--------upgrading--------"
+            echo "..."
             mv $git_dir/cdr $SCRIPT_PATH/
             rm -rf $git_dir
+            echo "--------upgrading success--------"
         else
             echo -e "\nalready the latest version: $VERSION"
             rm -rf $git_dir
