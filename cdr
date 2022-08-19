@@ -1,8 +1,8 @@
 #!/bin/bash
-# version:1.1 date:20220811 author:wangshuo
+# version:1.2 date:20220819 author:wangshuo
 
 #set -x
-VERSION=1.1
+VERSION=1.2
 REVERSE="~"
 SHELL_RC="~/.bashrc"
 
@@ -10,19 +10,45 @@ project=$*
 REPO_DIR=".repo"
 CUR_DIR=`pwd`
 HOME_DIR=`echo $HOME`
+INSTALL_PATH="~/bin"
+SCRIPT_PATH=$(cd `dirname $0`; pwd)
+SCRIPT_NAME="$(basename $0)"
 OLD_DIR=""
 repo=""
 GREP_STRING=""
 
 function Usage() {
-    echo -e "\033[33mUsage: cdr [project path]\033[0m"
-    echo -e "\033[37m   eg: cdr preloader (return path within preloader)\033[0m"
-    echo -e "\033[33mUsage: cdr ${REVERSE}[project path]\033[0m"
-    echo -e "\033[37m   eg: cdr custom ${REVERSE}trustzone (return custom but without trustzone)\033[0m"
-    echo -e "\033[33mUsage: cdr ~ (return to top of your project)\033[0m"
+    echo -e "\033[33mUsage: $SCRIPT_NAME [project path]\033[0m"
+    echo -e "\033[37m   eg: $SCRIPT_NAME preloader (return path within preloader)\033[0m"
+    echo -e "\033[33mUsage: $SCRIPT_NAME ${REVERSE}[project path]\033[0m"
+    echo -e "\033[37m   eg: $SCRIPT_NAME custom ${REVERSE}trustzone (return custom but without trustzone)\033[0m"
+    echo -e "\033[33mUsage: $SCRIPT_NAME ~ (return to top of your project)\033[0m"
     echo -e "\n\033[33m[-h] help\033[0m"
     echo -e "\033[33m[-v] version\033[0m"
-    echo -e "\033[33m[-i] install the cdr\033[0m"
+    echo -e "\033[33m[-i] install the $SCRIPT_NAME\033[0m"
+    echo -e "\033[33m[-u] upgrade the $SCRIPT_NAME\033[0m"
+}
+
+function Upgrade() {
+
+    git_dir="/tmp/cdr"
+    git clone https://github.com/WSure00/cdr.git $git_dir
+
+    if [ $? -ne 0 ];then
+        echo "git clone failed, please check git"
+        echo "error: git clone https://github.com/WSure00/cdr.git $git_dir"
+    else
+        target_version=`grep "VERSION=" $git_dir/cdr | awk -F'=' 'NR==1{print$2}'`
+        if [ `expr $VERSION \> $target_version` -eq 0 ];then
+            echo -e "\nlocal version is $VERSION, latest version is $target_version"
+            echo "--------upgrading--------"
+            mv $git_dir/cdr $SCRIPT_PATH/
+            rm -rf $git_dir
+        else
+            echo -e "\nalready the latest version: $VERSION"
+            rm -rf $git_dir
+        fi
+    fi
 }
 
 function findrepo(){
@@ -53,21 +79,21 @@ function grep_string(){
 
 function Install(){
 
-    mkdir -p ~/bin && cp cdr ~/bin/ && echo -e "mkdir ~/bin \nmove cdr to ~/bin/"
-    shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"~/bin\" | grep -v \"#\""`
+    mkdir -p ~/bin && cp $SCRIPT_NAME ${INSTALL_PATH}/ && echo -e "mkdir $INSTALL_PATH \nmove $SCRIPT_NAME to $INSTALL_PATH/"
+    shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"$INSTALL_PATH\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
     echo "PATH already exist!"
     else
-    eval "echo \"export PATH=\\\$PATH:~/bin\" >> $SHELL_RC"
-    echo "export PATH=\$PATH:~/bin >> $SHELL_RC"
+    eval "echo \"export PATH=\\\$PATH:$INSTALL_PATH\" >> $SHELL_RC"
+    echo "export PATH=\$PATH:$INSTALL_PATH >> $SHELL_RC"
     fi
 
-    shell_string=`eval "cat $SHELL_RC | grep \"alias cdr\" | grep \"source ~/bin/cdr\" | grep -v \"#\""`
+    shell_string=`eval "cat $SHELL_RC | grep \"alias $SCRIPT_NAME\" | grep \"source $INSTALL_PATH/$SCRIPT_NAME\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
     echo "alias already exist!"
     else
-    eval "echo \"alias cdr='source ~/bin/cdr'\" >> $SHELL_RC"
-    echo "alias cdr='source ~/bin/cdr' >> $SHELL_RC"
+    eval "echo \"alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME'\" >> $SHELL_RC"
+    echo "alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME' >> $SHELL_RC"
     fi
 
     echo -e "\033[33m-----install successful!------\033[0m"
@@ -92,7 +118,7 @@ if [ "$#" -gt "0" ];then
 
                     color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
                     for c in `echo $project`;do
-                        color=$(echo "$color" | sed 's/'${c}'/\\033[31m'${c}'\\033[0m/g')
+                        color=$(echo "$color" | sed 's/'${c}'/\\033[01m\\033[31m'${c}'\\033[0m/g')
                     done
                     echo -e "$color"
                     echo ""
@@ -135,6 +161,8 @@ if [ "$#" -gt "0" ];then
             echo -e "\033[33mversion is:$VERSION \033[0m"
         elif [ "$1" = "-i" ];then
             Install
+        elif [ "$1" = "-u" ];then
+            Upgrade
         else
             cd -
         fi
