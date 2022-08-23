@@ -1,10 +1,10 @@
 # cdr
-_Helps developers move efficiently in the repo directory_
+> Helps developers move efficiently in the repo directory
 
-_工具核心思路是使用repo list 和 grep 等组合命令，查找并进入相关项目路径。可以在repo任意目录中使用。_
+> 工具核心思路是使用repo list 和 grep 等组合命令，查找并进入相关项目路径。可以在repo任意目录中使用。
 
 ## 使用方法:  
-_( Ubuntu16.04 为例 )_
+> Ubuntu16.04 为例
 ### 1、给予执行权限: 
     chmod a+x cdr
 ### 2、安装: 
