@@ -9,7 +9,7 @@
     chmod a+x cdr
 ### 2、安装: 
     ./cdr -i  
-**注: 安装之后请执行 [source ~/.bashrc](url)**
+**注: 安装之后请执行 `source ~/.bashrc`**
 ### 3、条件与查找: 
 例:
 #### &emsp;     i.单条件查找
