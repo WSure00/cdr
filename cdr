@@ -1,8 +1,8 @@
 #!/bin/bash
-# version:1.2 date:20220819 author:wangshuo
+# version:1.21 date:20220825 author:wangshuo
 
 # set -x
-VERSION=1.2
+VERSION=1.21
 REVERSE="~"
 SHELL_RC="~/.bashrc"
 
@@ -84,18 +84,18 @@ function Install(){
     mkdir -p ~/bin && cp $SCRIPT_NAME ~/bin/ && echo -e "mkdir $INSTALL_PATH \nmove $SCRIPT_NAME to $INSTALL_PATH/"
     shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"$INSTALL_PATH\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
-    echo "PATH already exist!"
+        echo "PATH already exist!"
     else
-    eval "echo \"export PATH=\\\$PATH:$INSTALL_PATH\" >> $SHELL_RC"
-    echo "export PATH=\$PATH:$INSTALL_PATH >> $SHELL_RC"
+        eval "echo \"export PATH=\\\$PATH:$INSTALL_PATH\" >> $SHELL_RC"
+        echo "export PATH=\$PATH:$INSTALL_PATH >> $SHELL_RC"
     fi
 
     shell_string=`eval "cat $SHELL_RC | grep \"alias $SCRIPT_NAME\" | grep \"source $INSTALL_PATH/$SCRIPT_NAME\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
-    echo "alias already exist!"
+        echo "alias already exist!"
     else
-    eval "echo \"alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME'\" >> $SHELL_RC"
-    echo "alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME' >> $SHELL_RC"
+        eval "echo \"alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME'\" >> $SHELL_RC"
+        echo "alias $SCRIPT_NAME='source $INSTALL_PATH/$SCRIPT_NAME' >> $SHELL_RC"
     fi
 
     echo -e "\033[33m-----install successful!------\033[0m"
@@ -109,7 +109,6 @@ if [ "$#" -gt "0" ];then
         if [ "$CUR_DIR" != "/" ];then
             if [ "$1" != "~" ] && [ "$1" != "$HOME_DIR" ];then
                 SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps | awk '{print $NF}' | grep -v NF `
-                SHELL_VERSION=`echo $SHELL_VERSION | awk 'NR==1{print$1}' | sed 's/ //g'| xargs basename`
 
                 grep_string
                 shell_string="repo list | $GREP_STRING awk '{print \$0}'"
@@ -127,7 +126,7 @@ if [ "$#" -gt "0" ];then
                     echo -e "$color"
                     echo ""
 
-                    if [ "$SHELL_VERSION" = "zsh" ];then
+                    if [ -n "`echo $SHELL_VERSION | grep zsh`" ];then
                         vared -p "Please select a number of directory: " -c choice
                     else
                         read -p "Please select a number of directory: " choice
