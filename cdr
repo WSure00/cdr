@@ -121,7 +121,7 @@ if [ "$#" -gt "0" ];then
 
                     color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
                     for c in `echo $project`;do
-                        color=$(echo "$color" | sed 's/'${c}'/\\033[01m\\033[31m'${c}'\\033[0m/g')
+                        color=$(echo "$color" | sed 's#'${c}'#\\033[01m\\033[31m'${c}'\\033[0m#g')
                     done
                     echo -e "$color"
                     echo ""
