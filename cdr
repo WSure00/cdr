@@ -108,7 +108,7 @@ if [ "$#" -gt "0" ];then
     if [ "${1:0:1}" != "-" ];then
         if [ "$CUR_DIR" != "/" ];then
             if [ "$1" != "~" ] && [ "$1" != "$HOME_DIR" ];then
-                SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps | awk '{print $NF}' | grep -v NF `
+                SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps `
 
                 grep_string
                 shell_string="repo list | $GREP_STRING awk '{print \$0}'"
