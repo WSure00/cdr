@@ -81,19 +81,20 @@ function findrepo(){
 
 function grep_string(){
 
-        for i in `echo $project`;do
-            if [ ${i:0:1} = "$REVERSE" ];then
-                GREP_STRING=${GREP_STRING}"grep -iv ${i:1} |"
-            else
-                GREP_STRING=${GREP_STRING}"grep -i $i |"
-            fi
-        done
+    for i in `echo $project`;do
+        if [ ${i:0:1} = "$REVERSE" ];then
+            GREP_STRING=${GREP_STRING}"grep -iv ${i:1} |"
+        else
+            GREP_STRING=${GREP_STRING}"grep -i $i |"
+        fi
+    done
 
 }
 
 function Install(){
 
     mkdir -p ~/bin && cp $SCRIPT_NAME ~/bin/ && echo -e "mkdir $INSTALL_PATH \nmove $SCRIPT_NAME to $INSTALL_PATH/"
+
     shell_string=`eval "cat $SHELL_RC | grep \"export PATH\" | grep \"$INSTALL_PATH\" | grep -v \"#\""`
     if [ -n "$shell_string" ];then
         echo "PATH already exist!"
@@ -116,6 +117,7 @@ function Install(){
 }
 
 findrepo
+
 REPO_LIST_FILE="$CUR_DIR/$REPO_LIST_FILE"
 if [ "$#" -gt "0" ];then
     if [ "${1:0:1}" != "-" ];then
