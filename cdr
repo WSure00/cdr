@@ -70,6 +70,11 @@ function findrepo(){
     while [ "$CUR_DIR" != "$OLD_DIR" ] && [ -z "$repo" ]
     do
         repo="$CUR_DIR/$REPO_DIR"
+        if [ "$CUR_DIR" = "$HOME_DIR" ] || [ "$CUR_DIR" = "/" ] || [ -z "$CUR_DIR" ];then
+            CUR_DIR=$HOME_DIR
+            break
+        fi
+
         if [ ! -d "$repo" ];then
             repo=""
             OLD_DIR=$CUR_DIR
@@ -123,71 +128,81 @@ if [ "$#" -gt "0" ];then
     if [ "${1:0:1}" != "-" ];then
         if [ "$CUR_DIR" != "/" ];then
             if [ "$1" != "~" ] && [ "$1" != "$HOME_DIR" ];then
-                SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps `
+                if [ -f "$1" ];then
+                    dirpath="${1%/*}"
+                    cd $dirpath && ls
+                else
+                    SHELL_VERSION=`ps -ef | grep $(echo $$) | grep -v grep | grep -v ps `
 
-                grep_string
+                    grep_string
 
-                if [ -f "$REPO_LIST_FILE" ];then
-                    if [ ! -s "$REPO_LIST_FILE" ];then
+                    if [ -f "$REPO_LIST_FILE" ];then
+                        if [ ! -s "$REPO_LIST_FILE" ];then
+                            repo list >> $REPO_LIST_FILE
+                        fi
+                    else
+                        echo initial config file success: $REPO_LIST_FILE
                         repo list >> $REPO_LIST_FILE
                     fi
-                else
-                    echo initial config file success: $REPO_LIST_FILE
-                    repo list >> $REPO_LIST_FILE
-                fi
-                count=0
-                until [ $count -eq 1 ];do
-                    count=1
-                    shell_string="cat $REPO_LIST_FILE | $GREP_STRING awk '{print \$0}'"
-                    repository="`eval $shell_string`"
-                    project_sum=`echo "$repository" | awk 'END{if($0!="")print NR}'`
-
-                    if [ -z "$project_sum" ];then
-                        cat /dev/null > $REPO_LIST_FILE && repo list >> $REPO_LIST_FILE
+                    count=0
+                    until [ $count -eq 1 ];do
+                        count=1
+                        shell_string="cat $REPO_LIST_FILE | $GREP_STRING awk '{print \$0}'"
                         repository="`eval $shell_string`"
-                        if [ -z "$repository"];then
-                            echo -e "\033[33merror: cannot find $*, please check manifest\033[0m"
-                        else
-                            count=0
-                        fi
-                    elif [ "$project_sum" -gt "1" ];then
+                        project_sum=`echo "$repository" | awk 'END{if($0!="")print NR}'`
 
-                        color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
-                        for c in `echo $project`;do
-                            color=$(echo "$color" | sed 's#'${c}'#\\033[01m\\033[31m'${c}'\\033[0m#g')
-                        done
-                        echo -e "$color"
-                        echo ""
+                        if [ -z "$project_sum" ];then
+                            cat /dev/null > $REPO_LIST_FILE && repo list >> $REPO_LIST_FILE
+                            repository="`eval $shell_string`"
+                            if [ -z "$repository"];then
+                                echo -e "\033[33merror: cannot find $*, please check manifest\033[0m"
+                            else
+                                count=0
+                            fi
+                        elif [ "$project_sum" -gt "1" ];then
 
-                        if [ -n "`echo $SHELL_VERSION | grep zsh`" ];then
-                            vared -p "Please select a number of directory: " -c choice
-                        else
-                            read -p "Please select a number of directory: " choice
-                        fi
+                            color=$(echo "$repository" | awk '{print NR". "$0}' | sed 's/:/--->/g')
+                            for c in `echo $project`;do
+                                color=$(echo "$color" | sed 's#'${c}'#\\033[01m\\033[31m'${c}'\\033[0m#g')
+                            done
+                            echo -e "$color"
+                            echo ""
 
-                        if [ $choice -le $project_sum ] && [ $choice -gt 0 ];then
-                            dest_project="`echo "$repository" | awk 'NR=="'$choice'"{print$1}'`"
+                            if [ -n "`echo $SHELL_VERSION | grep zsh`" ];then
+                                vared -p "Please select a number of directory: " -c choice
+                            else
+                                read -p "Please select a number of directory: " choice
+                            fi
+
+                            if [ $choice -le $project_sum ] && [ $choice -gt 0 ];then
+                                dest_project="`echo "$repository" | awk 'NR=="'$choice'"{print$1}'`"
+                                echo "path : $CUR_DIR/$dest_project"
+                                cd $CUR_DIR/$dest_project
+                            else
+                                echo -e "\033[33merror: number should between 1 ~ ${project_sum}\033[0m"
+                            fi
+                                unset choice
+
+                        elif [ "$project_sum" -gt "0" ];then
+                            dest_project="`echo "$repository" | awk '{print$1}'`"
                             echo "path : $CUR_DIR/$dest_project"
                             cd $CUR_DIR/$dest_project
                         else
-                            echo -e "\033[33merror: number should between 1 ~ ${project_sum}\033[0m"
+                            echo -e "\033[33merror: cannot find $*, please check manifest\033[0m"
                         fi
-                            unset choice
-
-                    elif [ "$project_sum" -gt "0" ];then
-                        dest_project="`echo "$repository" | awk '{print$1}'`"
-                        echo "path : $CUR_DIR/$dest_project"
-                        cd $CUR_DIR/$dest_project
-                    else
-                        echo -e "\033[33merror: cannot find $*, please check manifest\033[0m"
-                    fi
-                done
+                    done
+                fi
             else
                 cd $CUR_DIR
             fi
 
         else
-            echo -e "\033[33merror: repo not init here!\033[0m"
+            if [ -f "$1" ];then
+                dirpath="${1%/*}"
+                cd $dirpath && ls
+            else
+                echo -e "\033[33merror: repo not init here!\033[0m"
+            fi
         fi
         unset GREP_STRING
 
